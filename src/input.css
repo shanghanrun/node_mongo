@@ -4,3 +4,7 @@
 
 /* watch 명령 프롬프트
 npx tailwindcss -i ./src/input.css -o ./src/output.css --watch */
+
+body{
+    background-color: gray;
+}
