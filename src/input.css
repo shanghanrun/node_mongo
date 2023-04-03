@@ -1,0 +1,6 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* watch 명령 프롬프트
+npx tailwindcss -i ./src/input.css -o ./src/output.css --watch */
