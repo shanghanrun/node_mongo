@@ -2,9 +2,10 @@ const express = require('express')
 const app = express()
 const MongoClient =require('mongodb').MongoClient
 const CONNECT_URL = `mongodb+srv://idim7:iioo[]789456@cluster0.dwajw45.mongodb.net/?retryWrites=true&w=majority`
+app.set('view engine', 'ejs')
 
 var db;
-MongoClient.connect(CONNECT_URL, function(에러, client){
+MongoClient.connect(CONNECT_URL, {useUnifiedTopology:true},function(에러, client){
   // 연결되면 할 일
   if(에러) return console.log(에러)
 
@@ -30,16 +31,36 @@ app.get('/write', function(req, res){
 })
 
 // var db로 선언했기 때문에(전역변수).... 어디에서나 db를 사용할 수 있다.
-app.post('/add', function(req, res){
-  db.collection('post').insertOne({제목: req.body.title, 날짜:req.body.date}, function(err, result){
-    console.log('제목: ',req.body.title, ' 날짜: ', req.body.date, ' db에 저장함')
+app.post('/add', function(요청, 응답){
+  응답.send('전송완료')
+  var 총게시물갯수;
+  db.collection('count').findOne({name:'게시물갯수'},function(에러, 결과){ 
+    console.log(결과.totalPost)
+    총게시물갯수 = parseInt(결과.totalPost)
+  
+    db.collection('post').insertOne({_id:총게시물갯수+1, 제목: 요청.body.title, 날짜: 요청.body.date}, function(에러, 결과){
+    console.log('저장완료')
+    db.collection('count').update({name:'게시물갯수'}, {$inc:{totalPost:1}}, function(){})
+    })
   })
-  res.send('디비에 저장되었습니다.');// '/add 페이지에 response로 보내는 메시지
-  // console.log(req.body)
-  // /list 로 GET 요청을 하면, 실제 db에 저장된 데이터를 이쁘게 html로 보여주기
+})  
 
-  app.get('/list', function(req, res){
-    db.collection('post').....
+app.get('/list', function(요청, 응답){
+  db.collection('post').find().toArray(function(에러, 결과){
+    응답.render('list.ejs', {posts: 결과})
+    console.log(결과)
+  })    
+  // list.ejs는 특별히 지정폴더인 views폴더에 있으므로 응답.sendFile(__dirname+'/list.htm')할 필요가 없다.
+  //응답.render()로 화면도 그리지만, 화면을 그릴 때 필요한 데이터도 건낸다.
+  //응답은, 서버에서 client(브라우저)로 보내는 것이다.
+})
 
-    res.sendFile(__dirname + '/list.html')
-  })
+app.delete('/delete', function(요청, 응답){
+  console.log(요청.body)   // data: {_id: 4}의 {_id: 4}
+  요청.body._id = parseInt(요청.body._id) //HTTP 통신은 숫자를 문자열로 만들어 보내니 {_id:'4'}, 다시 정수로 만들어야 된다.
+  const _id_obj = 요청.body   // 변환된 객체를 입력
+  db.collection('post').deleteOne(_id_obj, function(에러,결과){ 
+    console.log('삭제완료')
+    응답.status(200).send('성공했습니다') //{message:'성공'}
+  })  
+})
