@@ -68,13 +68,7 @@
 
         $('.detail').click(function(e){
           var 글번호 = e.target.dataset.id
-          $.ajax({       
-            method: 'GET',
-            url:`/detail/${글번호}`,
-            
-          }).done(function(결과){
-            console.log('요청성공')            
-          }).fail();
+          window.location.href = `/detail/${글번호}`;           
         })
 
         
