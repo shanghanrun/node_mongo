@@ -17,17 +17,17 @@ MongoClient.connect(CONNECT_URL, {useUnifiedTopology:true},function(에러, clie
 })
 
 app.use(express.urlencoded({extended: true}))
-app.use(express.static('src'))  // 폴더
+app.use(express.static('public'))  // 폴더
 
 //app.get('/beauty')   app.post('/add) 는 url(주소창)에 이벤트리스너를 달은 것과 같다.
 app.get('/beauty', function(req, res){
   console.log('뷰티용품 페이지입니다.')
 });
 app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html')
+  res.render('index.ejs')
 });
 app.get('/write', function(req, res){
-  res.sendFile(__dirname + '/write.html')
+  res.render('write.ejs') 
 })
 
 // var db로 선언했기 때문에(전역변수).... 어디에서나 db를 사용할 수 있다.
@@ -59,8 +59,29 @@ app.delete('/delete', function(요청, 응답){
   console.log(요청.body)   // data: {_id: 4}의 {_id: 4}
   요청.body._id = parseInt(요청.body._id) //HTTP 통신은 숫자를 문자열로 만들어 보내니 {_id:'4'}, 다시 정수로 만들어야 된다.
   const _id_obj = 요청.body   // 변환된 객체를 입력
-  db.collection('post').deleteOne(_id_obj, function(에러,결과){ 
+  db.collection('post').deleteOne(_id_obj, function(){ 
     console.log('삭제완료')
-    응답.status(200).send('성공했습니다') //{message:'성공'}
+    응답.status(200).send({message:'성공했습니다'}) //{message:'성공'}
   })  
+})
+
+
+app.get('/detail/:id', function(요청,응답){
+  db.collection('post').findOne({_id:parseInt(요청.params.id)}, function(에러, 결과){
+    if(에러){
+      console.log(에러)
+      응답.status(404).send('요청한 페이지가 없습니다.')
+      return;
+    }
+    if(결과 === null){ // 결과값이 null일 경우 처리
+      응답.status(404).send('요청한 페이지가 없습니다.');
+      return;
+    }
+    console.log(결과)
+    응답.render('detail.ejs', {data: 결과})
+  })  
+})
+
+app.get('/edit', function(요청, 응답){
+  응답.render('edit.ejs')
 })
