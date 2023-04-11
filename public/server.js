@@ -1,17 +1,19 @@
 const express = require('express')
 const app = express()
 const MongoClient =require('mongodb').MongoClient
-const CONNECT_URL = `mongodb+srv://idim7:iioo[]789456@cluster0.dwajw45.mongodb.net/?retryWrites=true&w=majority`
+require('dotenv').config()
+const port = process.env.PORT
+const dbURL = process.env.DB_URL
 app.set('view engine', 'ejs')
 
 var db;
-MongoClient.connect(CONNECT_URL, {useUnifiedTopology:true},function(에러, client){
+MongoClient.connect(dbURL, {useUnifiedTopology:true},function(에러, client){
   // 연결되면 할 일
   if(에러) return console.log(에러)
 
   db = client.db('todoapp');
   // db.collection('post').insertOne({이름: 'Choi', 나이: 20, _id:100}, function(에러, 결과){console.log('저장완료') });
-  app.listen(8080, function(){
+  app.listen(port, function(){
     console.log('listening on  8080')
   })
 })
@@ -147,5 +149,29 @@ passport.serializeUser(function(user,done){
 })
 
 passport.deserializeUser(function(아이디, done){
-  done(null, {})
+  db.collection('login').findOne({id:아이디}, function(에러, 결과){
+    done(null, 결과)
+  })
+})
+
+app.get('/mypage', 로그인했니, function(요청, 응답){
+  응답.render('mypage.ejs', { 사용자: 요청.user})
+})
+
+
+function 로그인했니(요청, 응답, next){
+  if(요청.user){
+    next()
+  } else {
+    응답.send('로그인 안하셨어요.')
+  }
+}
+
+app.get('/logout', function(요청,응답){
+  요청.logout(function(err) {
+    if (err) {
+      console.log(err);
+    }
+    응답.redirect('/login');
+  });
 })
