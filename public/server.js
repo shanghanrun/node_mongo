@@ -65,9 +65,10 @@ app.get('/beauty', function(req, res){
 app.get('/', function(req, res){
   res.render('index.ejs')
 });
-app.get('/write', function(req, res){
-  res.render('write.ejs', { user: 요청.user}) 
-})
+app.get('/write', function(req, res){  
+  res.render('write.ejs', { user: req.user})   
+})  // 로그인 되었을 때만 에러(user undefined) 안나고 접속가능하다.
+// 그러므로 처음 home 접속시 무조건 로그인하게 하는 로직으로 만들어야 된다. 수정하자.
 
 // var db로 선언했기 때문에(전역변수).... 어디에서나 db를 사용할 수 있다.
 
@@ -75,6 +76,7 @@ app.get('/write', function(req, res){
 app.get('/list', function(요청, 응답){
   db.collection('post').find().toArray(function(에러, 결과){
     응답.render('list.ejs', {posts: 결과, user: 요청.user})
+  
     console.log(결과)
   })    
   // list.ejs는 특별히 지정폴더인 views폴더에 있으므로 응답.sendFile(__dirname+'/list.htm')할 필요가 없다.
@@ -214,3 +216,6 @@ app.post('/add', function(요청, 응답){
     })
   })
 })  
+
+
+app.use('/shop', require('../routes/shop.js'))
